@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Puter AI Image Generator</title>
+    <script src="https://js.puter.com/v2/"></script>
+
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+            background: #f4f4f4;
+            color: #222;
+            transition: 0.3s;
+        }
+
+        /* Dark Mode */
+        body.dark {
+            background: #121212;
+            color: #fff;
+        }
+
+        #container {
+            max-width: 600px;
+            margin: auto;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+        }
+
+        button {
+            padding: 10px 16px;
+            margin-top: 10px;
+            cursor: pointer;
+            border: none;
+            background: #4CAF50;
+            color: white;
+            border-radius: 5px;
+        }
+
+        .dark button {
+            background: #1f8fff;
+        }
+
+        .image-box {
+            margin-top: 20px;
+            background: #fff;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .dark .image-box {
+            background: #1e1e1e;
+        }
+
+        img {
+            max-width: 100%;
+            border-radius: 10px;
+        }
+
+        .download-btn {
+            background: #333;
+            margin-top: 10px;
+        }
+
+        .gallery {
+            margin-top: 30px;
+        }
+
+        .gallery img {
+            width: 120px;
+            margin: 8px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        #loading {
+            display: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="container">
+
+    <h2>Puter AI Image Generator</h2>
+
+    <!-- Dark Mode Toggle -->
+    <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+
+    <input id="prompt" type="text" placeholder="Enter your image prompt…">
+
+    <!-- Multiple image count -->
+    <select id="count">
+        <option value="1">Generate 1 Image</option>
+        <option value="2">Generate 2 Images</option>
+        <option value="3">Generate 3 Images</option>
+    </select>
+
+    <button onclick="generateImages()">Generate</button>
+
+    <p id="loading">⏳ Generating images… please wait</p>
+
+    <div id="result"></div>
+
+    <!-- HISTORY GALLERY -->
+    <h3>History Gallery</h3>
+    <div id="gallery" class="gallery"></div>
+
+</div>
+
+<script>
+
+    function toggleDarkMode() {
+        document.body.classList.toggle("dark");
+    }
+
+    async function generateImages() {
+        const prompt = document.getElementById("prompt").value;
+        const count = parseInt(document.getElementById("count").value);
+        const resultDiv = document.getElementById("result");
+        const gallery = document.getElementById("gallery");
+        const loading = document.getElementById("loading");
+
+        if (!prompt.trim()) {
+            alert("Please enter a prompt!");
+            return;
+        }
+
+        resultDiv.innerHTML = "";
+        loading.style.display = "block";
+
+        try {
+            for (let i = 0; i < count; i++) {
+
+                // Generate image
+                const img = await puter.ai.txt2img(prompt, { model: "gpt-image-1" });
+
+                // Result container
+                const imgBox = document.createElement("div");
+                imgBox.className = "image-box";
+
+                // Add image to main result
+                imgBox.appendChild(img);
+
+                // Create download button
+                const dlBtn = document.createElement("button");
+                dlBtn.className = "download-btn";
+                dlBtn.innerText = "Download Image";
+
+                dlBtn.onclick = () => {
+                    const link = document.createElement("a");
+                    link.href = img.src;
+                    link.download = "generated.png";
+                    link.click();
+                };
+
+                imgBox.appendChild(dlBtn);
+
+                resultDiv.appendChild(imgBox);
+
+                // Add to history gallery
+                const galleryThumb = img.cloneNode(true);
+                gallery.appendChild(galleryThumb);
+            }
+        } catch (err) {
+            console.error(err);
+            resultDiv.innerHTML = "<p style='color:red;'>Error generating image!</p>";
+        } finally {
+            loading.style.display = "none";
+        }
+    }
+</script>
+
+</body>
+</html>
